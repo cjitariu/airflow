@@ -140,8 +140,8 @@ spec:
         - mountPath: /usr/local/airflow/webserver_config.py
           name: webserver-config
           subPath: webserver_config.py
-        - mountPath: /usr/local/airflow/logs
-          name: airflow-logs
+        # - mountPath: /usr/local/airflow/logs
+        #   name: airflow-logs
         - mountPath: /usr/local/airflow/dags
           name: airflow-dags
       dnsPolicy: ClusterFirst
@@ -172,9 +172,9 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - name: airflow-logs
-        persistentVolumeClaim:
-          claimName: airflow-logs
+      # - name: airflow-logs
+      #   persistentVolumeClaim:
+      #     claimName: airflow-logs
       - configMap:
           defaultMode: 420
           name: airflow-config
