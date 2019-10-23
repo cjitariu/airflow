@@ -58,7 +58,7 @@ spec:
         volumeMounts:
         - mountPath: /git
           name: airflow-dags
-      - image: eivantsov/nginx
+      - image: serverbee/airflow-nginx
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -103,7 +103,7 @@ spec:
         envFrom:
         - secretRef:
             name: airflow-env
-        image: eivantsov/airflow:latest
+        image: serverbee/airflow:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -154,7 +154,7 @@ spec:
         envFrom:
         - secretRef:
             name: airflow-env
-        image: eivantsov/airflow:latest
+        image: serverbee/airflow:latest
         imagePullPolicy: IfNotPresent
         name: init-airflow
         resources: {}

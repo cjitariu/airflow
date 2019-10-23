@@ -42,3 +42,14 @@ git-sync container of airflow-web deployment has the following env:
       name: git
 ```
 Replace repo and branch and edit git secret to provision username and password for private repos.
+
+## Images
+
+There are 4 images used in deployments:
+
+* centos/postgresql-94-centos7
+* k8s.gcr.io/git-sync:v3.0.1
+* serverbee/nginx
+* serverbee/airflow
+
+Dockerfiles for the latter are located in dockerfiles directory in this repository.

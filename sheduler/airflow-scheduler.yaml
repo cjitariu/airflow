@@ -68,7 +68,7 @@ spec:
         envFrom:
         - secretRef:
             name: airflow-env
-        image: eivantsov/airflow:latest
+        image: serverbee/airflow:latest
         imagePullPolicy: IfNotPresent
         name: scheduler
         resources: {}
