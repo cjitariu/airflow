@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: airflow-scheduler
+  name: airflow-cluster-access
+  namespace: airflow

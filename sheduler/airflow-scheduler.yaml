@@ -1,0 +1,101 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: airflow-scheduler
+  name: airflow-scheduler
+  namespace: airflow
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: airflow-scheduler
+      release: airflow
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 100%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: fd949609960165c4794623fa0dd76259b49687506f0306783511ae06f7a59bb7
+        configmap.fabric8.io/update-on-change: airflow-env
+      creationTimestamp: null
+      labels:
+        app: airflow-scheduler
+        release: airflow
+    spec:
+      containers:
+      - env:
+        - name: GIT_SYNC_REPO
+          value: https://github.com/apache/airflow
+        - name: GIT_SYNC_BRANCH
+          value: master
+        - name: GIT_SYNC_ROOT
+          value: /git
+        - name: GIT_SYNC_DEST
+          value: repo
+        - name: GIT_SYNC_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: GIT_SYNC_USERNAME
+              name: git
+        - name: GIT_SYNC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: GIT_SYNC_PASSWORD
+              name: git
+        image: k8s.gcr.io/git-sync:v3.0.1
+        imagePullPolicy: IfNotPresent
+        name: git-sync
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /git
+          name: airflow-dags
+      - args:
+        - scheduler
+        env:
+        - name: AIRFLOW_KUBE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        envFrom:
+        - secretRef:
+            name: airflow-env
+        image: eivantsov/airflow:latest
+        imagePullPolicy: IfNotPresent
+        name: scheduler
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/local/airflow/airflow.cfg
+          name: airflow-config
+          subPath: airflow.cfg
+        - mountPath: /usr/local/airflow/dags
+          name: airflow-dags
+        - mountPath: /usr/local/airflow/logs
+          name: airflow-logs
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: airflow-cluster-access
+      serviceAccountName: airflow-cluster-access
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: airflow-logs
+        persistentVolumeClaim:
+          claimName: airflow-logs
+      - configMap:
+          defaultMode: 420
+          name: airflow-config
+        name: airflow-config
+      - emptyDir: {}
+        name: airflow-dags

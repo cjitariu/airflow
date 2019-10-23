@@ -1,0 +1,195 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: airflow-web
+  name: airflow-web
+  namespace: airflow
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: airflow-web
+      release: airflow
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: fd949609960165c4794623fa0dd76259b49687506f0306783511ae06f7a59bb7
+        configmap.fabric8.io/update-on-change: airflow-env
+      labels:
+        app: airflow-web
+        release: airflow
+    spec:
+      containers:
+      - env:
+        - name: GIT_SYNC_REPO
+          value: https://github.com/apache/airflow
+        - name: GIT_SYNC_BRANCH
+          value: master
+        - name: GIT_SYNC_ROOT
+          value: /git
+        - name: GIT_SYNC_DEST
+          value: repo
+        - name: GIT_SYNC_WAIT
+          value: "60"
+        - name: GIT_SYNC_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: GIT_SYNC_USERNAME
+              name: git
+        - name: GIT_SYNC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: GIT_SYNC_PASSWORD
+              name: git
+        image: k8s.gcr.io/git-sync:v3.0.1
+        imagePullPolicy: IfNotPresent
+        name: git-sync
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /git
+          name: airflow-dags
+      - image: eivantsov/nginx
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /health
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: nginx
+        ports:
+        - containerPort: 80
+          name: nginx
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d/default.conf
+          name: nginx
+          subPath: nginx.conf
+      - args:
+        - webserver
+        env:
+        - name: AIRFLOW_KUBE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        envFrom:
+        - secretRef:
+            name: airflow-env
+        image: eivantsov/airflow:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /health
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: webserver
+        ports:
+        - containerPort: 8080
+          name: webserver
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/local/airflow/airflow.cfg
+          name: airflow-config
+          subPath: airflow.cfg
+        - mountPath: /usr/local/airflow/webserver_config.py
+          name: webserver-config
+          subPath: webserver_config.py
+        - mountPath: /usr/local/airflow/logs
+          name: airflow-logs
+        - mountPath: /usr/local/airflow/dags
+          name: airflow-dags
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - -cx
+        - bash /usr/local/init-airflow.sh
+        command:
+        - bash
+        envFrom:
+        - secretRef:
+            name: airflow-env
+        image: eivantsov/airflow:latest
+        imagePullPolicy: IfNotPresent
+        name: init-airflow
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/local/airflow/airflow.cfg
+          name: airflow-config
+          subPath: airflow.cfg
+        - mountPath: /usr/local/init-airflow.sh
+          name: init-airflow
+          subPath: init-airflow.sh
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: airflow-logs
+        persistentVolumeClaim:
+          claimName: airflow-logs
+      - configMap:
+          defaultMode: 420
+          name: airflow-config
+        name: airflow-config
+      - name: webserver-config
+        secret:
+          defaultMode: 420
+          secretName: webserver-config
+      - configMap:
+          defaultMode: 420
+          name: airflow-init
+        name: init-airflow
+      - configMap:
+          defaultMode: 420
+          name: airflow-nginx
+        name: nginx
+      - emptyDir: {}
+        name: airflow-dags

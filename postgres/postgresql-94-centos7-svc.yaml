@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgresql-94-centos7
+  name: postgresql-94-centos7
+  namespace: airflow
+spec:
+  ports:
+  - name: 5432-tcp
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app: airflow
+    component: postgres
+  sessionAffinity: None
+  type: ClusterIP

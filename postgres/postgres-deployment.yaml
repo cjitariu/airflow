@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: airflow
+  labels:
+    app: airflow
+    component: postgres
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: postgres
+    spec:
+      containers:
+      - env:
+        - name: POSTGRESQL_USER
+          value: airflow
+        - name: POSTGRESQL_PASSWORD
+          value: airflow
+        - name: POSTGRESQL_DATABASE
+          value: airflow
+        image: centos/postgresql-94-centos7
+        imagePullPolicy: Always
+        name: postgres
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 5432
+          timeoutSeconds: 1
+        readinessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - psql -h 127.0.0.1 -U ${POSTGRESQL_USER} -q -d $POSTGRESQL_DATABASE -c "SELECT 1"
+          failureThreshold: 10
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          successThreshold: 1
+          timeoutSeconds: 1
+        ports:
+        - containerPort: 5432
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/pgsql/data
+          name: postgres-data
+      restartPolicy: Always
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres
