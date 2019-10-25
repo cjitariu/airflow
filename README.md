@@ -43,6 +43,16 @@ git-sync container of airflow-web deployment has the following env:
 ```
 Replace repo and branch and edit git secret to provision username and password for private repos.
 
+## UID for DAG Pods
+
+Airflow configmap will instruct scheduler to run pods as user `1000160000`:
+
+```
+git_sync_run_as_user = 1000160000
+```
+
+Change it to the range that makes sense for your OpenShift namespace.
+
 ## Images
 
 There are 4 images used in deployments:
