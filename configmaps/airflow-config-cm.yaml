@@ -16,6 +16,7 @@ data:
     rbac = false
 
     [kubernetes]
+    git_sync_run_as_user = 1000160000
     airflow_configmap = airflow-config
     worker_container_repository = airflow
     worker_container_tag = latest
