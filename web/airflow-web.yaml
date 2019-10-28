@@ -95,6 +95,8 @@ spec:
       - args:
         - webserver
         env:
+        - name: AIRFLOW_CONFIG
+          value: /config/airflow.cfg
         - name: AIRFLOW_KUBE_NAMESPACE
           valueFrom:
             fieldRef:
@@ -134,12 +136,12 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /usr/local/airflow/airflow.cfg
+        - mountPath: /config
           name: airflow-config
-          subPath: airflow.cfg
+          # subPath: airflow.cfg
         - mountPath: /usr/local/airflow/webserver_config.py
           name: webserver-config
-          subPath: webserver_config.py
+          # subPath: webserver_config.py
         # - mountPath: /usr/local/airflow/logs
         #   name: airflow-logs
         - mountPath: /usr/local/airflow/dags
@@ -148,7 +150,7 @@ spec:
       initContainers:
       - args:
         - -cx
-        - bash /usr/local/init-airflow.sh
+        - bash /entrypoint/init-airflow.sh
         command:
         - bash
         envFrom:
@@ -157,16 +159,18 @@ spec:
         image: serverbee/airflow:latest
         imagePullPolicy: IfNotPresent
         name: init-airflow
+        env:
+        - name: AIRFLOW_CONFIG
+          value: /config/airflow.cfg
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /usr/local/airflow/airflow.cfg
+        - mountPath: /config
           name: airflow-config
-          subPath: airflow.cfg
-        - mountPath: /usr/local/init-airflow.sh
+        - mountPath: /entrypoint
           name: init-airflow
-          subPath: init-airflow.sh
+          # subPath: init-airflow.sh
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
