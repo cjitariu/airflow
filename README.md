@@ -55,11 +55,10 @@ Change it to the range that makes sense for your OpenShift namespace.
 
 ## Images
 
-There are 4 images used in deployments:
+There are 3 images used in deployments:
 
 * centos/postgresql-94-centos7
 * k8s.gcr.io/git-sync:v3.0.1
-* serverbee/nginx
 * serverbee/airflow
 
 Dockerfiles for the latter are located in dockerfiles directory in this repository.
