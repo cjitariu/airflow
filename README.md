@@ -53,6 +53,9 @@ git_sync_run_as_user = 1000160000
 
 Change it to the range that makes sense for your OpenShift namespace.
 
+Once deployed, runa  sample dag, and follow shceduler pod logs. You will most likely see an error from k8s executor saying that it cannot schedule a pod because of an illegal UID.
+The error will also indicate allowed UID range, which you should use to update airflow-config ConfigMap and delete scheduler pod so that updated config is used.
+
 ## Images
 
 There are 3 images used in deployments:
