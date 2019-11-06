@@ -6,7 +6,7 @@ Usage:
 Options:
  -i,    --image              image to to deploy, e.g. -i=myartifactory.com/myorg/myimage:mytag. Defaults to serverbee/airflow. Optional.
  -p,    --project            OpenShift project to deploy airflow to. The project must exist. The script will exit if the project does not exist. Mandatory
- -w=,   --wait               wait for deployments to be scaled to 1. Timeout is 300 seconds. Optional
+ -w,    --wait               wait for deployments to be scaled to 1. Timeout is 300 seconds. Optional
  -h,    --help               show this help
 "
 
