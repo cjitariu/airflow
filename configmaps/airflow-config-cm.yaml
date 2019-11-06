@@ -16,7 +16,7 @@ data:
     rbac = false
 
     [kubernetes]
-    git_sync_run_as_user = 1000160000
+    git_sync_run_as_user = ${NAMESPACE_UID}
     airflow_configmap = airflow-config
     worker_container_repository = airflow
     worker_container_tag = latest
@@ -31,7 +31,7 @@ data:
     logs_volume_subpath =
 
     in_cluster = true
-    namespace = airflow
+    namespace = ${AIRFLOW_NAMESPACE}
 
     # for cloning dags from git repositories into volumes: https://github.com/kubernetes/git-sync
     git_sync_container_repository = k8s.gcr.io/git-sync
@@ -62,4 +62,3 @@ metadata:
   labels:
     app: airflow
   name: airflow-config
-  namespace: airflow

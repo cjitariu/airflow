@@ -39,4 +39,3 @@ metadata:
   labels:
     app: airflow
   name: airflow-init
-  namespace: airflow

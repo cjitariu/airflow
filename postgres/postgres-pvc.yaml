@@ -4,7 +4,6 @@ metadata:
   labels:
     app: airflow
   name: postgres
-  namespace: airflow
 spec:
   accessModes:
   - ReadWriteOnce

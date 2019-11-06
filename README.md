@@ -12,7 +12,24 @@
 In the root of this repository:
 
 ```
-./run.sh
+./run.sh -p=$project
+```
+You can use own image in Airflow deployment:
+
+```
+./run.sh -p=$project -i=your/airflow-image
+```
+
+The script can also verify the deployment is healthy:
+
+```
+./run.sh -p=$project --wait
+```
+
+Print help:
+
+```
+./run.sh --help
 ```
 
 ## How to Configure git sync repo
@@ -43,18 +60,6 @@ git-sync container of airflow-web deployment has the following env:
 ```
 Replace repo and branch and edit git secret to provision username and password for private repos.
 
-## UID for DAG Pods
-
-Airflow configmap will instruct scheduler to run pods as user `1000160000`:
-
-```
-git_sync_run_as_user = 1000160000
-```
-
-Change it to the range that makes sense for your OpenShift namespace.
-
-Once deployed, runa  sample dag, and follow shceduler pod logs. You will most likely see an error from k8s executor saying that it cannot schedule a pod because of an illegal UID.
-The error will also indicate allowed UID range, which you should use to update airflow-config ConfigMap and delete scheduler pod so that updated config is used.
 
 ## Images
 
@@ -64,4 +69,43 @@ There are 3 images used in deployments:
 * k8s.gcr.io/git-sync:v3.0.1
 * serverbee/airflow
 
-Dockerfiles for the latter are located in dockerfiles directory in this repository.
+Dockerfiles for the latter are located in dockerfiles directory in this repository. There's also a script that builds this image `dockerfiles/airflow/build-docker.sh`.
+Running this script without args will produce an image `airflow:latest`. You may pass arguments though:
+
+```
+./build-docker.sh myregistry/myorg/myimage mytag
+```
+
+This will produce an image `myregistry/myorg/myimage:mytag` which you can pass to `./run.sh` as `-i=myregistry/myorg/myimage:mytag`
+
+## Logs
+
+### Postgres
+
+```
+oc logs deployment/postgres
+```
+
+### Scheduler
+
+There are two containers in scheduler pod:
+
+```
+oc logs deployment/airflow-scheduler -c git-sync
+oc logs deployment/airflow-scheduler -c scheduler
+
+```
+### Web
+
+There's an init container in web pod:
+
+```
+oc logs deployment/airflow-web -c init-airflow
+```
+
+And two containers in the pod:
+
+```
+oc logs deployment/airflow-web -c git-sync
+oc logs deployment/airflow-web -c webserver
+```

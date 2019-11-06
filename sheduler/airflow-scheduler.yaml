@@ -4,7 +4,6 @@ metadata:
   labels:
     app: airflow-scheduler
   name: airflow-scheduler
-  namespace: airflow
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -68,7 +67,7 @@ spec:
         envFrom:
         - secretRef:
             name: airflow-env
-        image: serverbee/airflow:latest
+        image: ${AIRFLOW_IMAGE}
         imagePullPolicy: IfNotPresent
         name: scheduler
         resources: {}

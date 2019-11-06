@@ -4,11 +4,6 @@ IMAGE=${1:-airflow}
 TAG=${2:-latest}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# ENVCONFIG=$(minishift docker-env)
-# if [ $? -eq 0 ]; then
-#   eval $ENVCONFIG
-# fi
-
 rm -rf .tmp/
 
 mkdir -p .tmp && cd .tmp

@@ -4,7 +4,6 @@ metadata:
   labels:
     app: airflow
   name: airflow-logs
-  namespace: airflow
 spec:
   accessModes:
   - ReadWriteOnce

@@ -4,7 +4,6 @@ metadata:
   labels:
     app: postgresql-94-centos7
   name: postgresql-94-centos7
-  namespace: airflow
 spec:
   ports:
   - name: 5432-tcp

@@ -4,7 +4,6 @@ metadata:
   labels:
     app: airflow-web
   name: airflow-web
-  namespace: airflow
 spec:
   externalTrafficPolicy: Cluster
   ports:
