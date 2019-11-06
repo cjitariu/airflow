@@ -94,12 +94,12 @@ waitForDeployment() {
   printInfo "Waiting for deployment/${DEPLOYMENT}. Expecting $REQUIRED_COUNT replicas. Timeout in $TIMEOUT seconds"
   CUNNRENT_COUNT=$(oc get deployment/${DEPLOYMENT} -n ${AIRFLOW_NAMESPACE} -o=jsonpath='{.status.availableReplicas}')
   if [ $? -ne 0 ]; then
-    echo "An error occurred. Exiting"
+    printError "An error occurred. Exiting"
     exit 1
   fi
   SLEEP=5
   exit=$((SECONDS+TIMEOUT))
-  while [ "${CUNNRENT_COUNT}" -ne "${REQUIRED_COUNT}" ] && [ ${SECONDS} -lt ${exit} ]; do
+  while [ -z "${CUNNRENT_COUNT}" ] && [ ${SECONDS} -lt ${exit} ]; do
     CUNNRENT_COUNT=$(oc get deployment/${DEPLOYMENT} -n ${AIRFLOW_NAMESPACE} -o=jsonpath='{.status.availableReplicas}')
     timeout_in=$((exit-SECONDS))
     sleep ${SLEEP}
