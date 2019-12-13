@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: airflow
+    component: mariadb
+  name: mariadb
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: mariadb
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: mariadb
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_USER
+          value: airflow
+        - name: MYSQL_PASSWORD
+          value: airflow
+        - name: MYSQL_DATABASE
+          value: airflow
+        image: registry.access.redhat.com/rhscl/mariadb-101-rhel7
+        imagePullPolicy: Always
+        name: mariadb
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 3306
+          timeoutSeconds: 1
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -i
+            - -c
+            - mysql -h 127.0.0.1 -u $MYSQL_USER -p$MYSQL_PASSWORD -D $MYSQL_DATABASE -e 'SELECT 1'
+          failureThreshold: 10
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          successThreshold: 1
+          timeoutSeconds: 1
+        ports:
+        - containerPort: 3306
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/mysql/data
+          name: mariadb-data
+      restartPolicy: Always
+      volumes:
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: mariadb
